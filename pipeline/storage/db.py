@@ -3,8 +3,10 @@ import uuid
 import os
 from pathlib import Path
 
-DB_PATH = "data/sepsis_atlas.duckdb"
-SCHEMA_PATH = "pipeline/storage/schema.sql"
+from config.settings import DB_PATH, SCHEMA_PATH
+
+# DB_PATH = "data/sepsis_atlas.duckdb"
+# SCHEMA_PATH = "pipeline/storage/schema.sql"
 
 
 def get_connection():

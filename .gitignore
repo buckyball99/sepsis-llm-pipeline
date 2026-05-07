@@ -1,1 +1,45 @@
+# API keys
 .env
+
+# Virtual environments
+hackathon_venv/
+venv/
+.venv/
+
+# PDFs
+data/raw_pdfs/
+
+# Generated files
+data/processed/
+data/sepsis_atlas.duckdb
+
+# Python cache
+*.__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Mac junk
+.DS_Store
+
+# Windows junk
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Prefect
+.prefect/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/

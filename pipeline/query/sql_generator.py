@@ -1,7 +1,9 @@
 import duckdb
 from pipeline.extraction.llm_client import generate_sql
 
-DB_PATH = "data/sepsis_atlas.duckdb"
+from config.settings import DB_PATH
+
+# DB_PATH = "data/sepsis_atlas.duckdb"
 
 SCHEMA_DESCRIPTION = """
 Table: evidence
