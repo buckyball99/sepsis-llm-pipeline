@@ -3,6 +3,7 @@
 
 # Virtual environments
 hackathon_venv/
+hackhathon_env
 venv/
 .venv/
 
