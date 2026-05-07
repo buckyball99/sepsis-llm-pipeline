@@ -1,0 +1,12 @@
+# requirements.txt
+docling
+duckdb
+openai              # used as base client for all providers including OpenRouter
+pydantic>=2.0
+prefect>=2.0
+networkx
+rank-bm25
+streamlit
+sentence-transformers   # only if adding vector fallback
+python-dotenv
+pandas
