@@ -1,7 +1,9 @@
 import json
+from pathlib import Path
 from pipeline.extraction.llm_client import extract
 
-with open("config/medical_terms.json") as f:
+_TERMS_PATH = Path(__file__).parent.parent.parent / "config" / "medical_terms.json"
+with open(_TERMS_PATH, encoding="utf-8") as f:
     SYNONYMS = json.load(f)
 
 EXPANSION_PROMPT = """You are a medical terminology expert for sepsis research.

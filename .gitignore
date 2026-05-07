@@ -1,1 +1,7 @@
 .env
+.vscode/
+__pycache__/
+data/raw_pdfs/
+pipeline/__pycache__/__init__.cpython-311.pyc
+pipeline/storage/__pycache__/__init__.cpython-311.pyc
+pipeline/storage/__pycache__/db.cpython-311.pyc

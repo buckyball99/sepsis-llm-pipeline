@@ -67,3 +67,84 @@ Return a JSON object:
 
 Return only valid JSON.
 """
+
+# ── Use Case 2: Sepsis Phenotype Extraction ───────────────────────────────────
+
+PHENOTYPE_EXTRACTION_PROMPT = """
+You are a clinical data extraction specialist for sepsis phenotype research.
+
+Your task: extract every patient phenotype or cluster definition described in this
+paper section. Each cluster becomes one JSON object in an array.
+
+Return a JSON object with one key "records" containing an array:
+
+{
+  "records": [
+    {
+      "cluster_id": "A|B|C|D or 1|2|3|4 as used in the paper",
+      "clustering_method": "k-means|LCA|hierarchical|other — exact method used",
+      "num_clusters": integer total number of clusters reported or null,
+      "variables_used": "comma-separated list of variables used for clustering",
+      "num_variables": integer number of variables or null,
+      "cluster_size": "N= or % of total cohort, as reported or null",
+      "key_features": "defining biomarkers/scores with direction e.g. 'Lactate↑, SOFA↑'",
+      "clinical_description": "qualitative label e.g. 'High inflammation phenotype'",
+      "outcome_mortality": "ICU/28-day/in-hospital mortality % or rate, as reported or null",
+      "outcome_icu_stay": "ICU LOS as reported or null",
+      "external_assignment_feasible": "yes|no|unclear — whether cluster assignment rules are reproducible",
+      "source_location": "section name and table/figure if applicable",
+      "source_quote": "the exact sentence or table row — mandatory",
+      "confidence": "high|medium|low",
+      "notes": "caveats or null"
+    }
+  ]
+}
+
+Rules:
+- source_quote is MANDATORY.
+- Extract ALL clusters described, one record per cluster.
+- If assignment rules are not published (e.g. only centroid published), set external_assignment_feasible to 'no'.
+- Return only valid JSON.
+"""
+
+# ── Use Case 3: Biomarker Ranking for Risk Stratification ────────────────────
+
+BIOMARKER_RANKING_PROMPT = """
+You are a clinical data extraction specialist for sepsis biomarker research.
+
+Your task: extract every biomarker or clinical score evaluated as a predictor of
+mortality or severity in this paper section.
+
+Return a JSON object with one key "records" containing an array:
+
+{
+  "records": [
+    {
+      "predictor": "biomarker or score name",
+      "predictor_type": "biomarker|clinical_score|composite",
+      "outcome": "exact outcome (e.g. 28-day mortality)",
+      "population": "brief cohort description",
+      "sample_size": "N= as reported or null",
+      "model": "logistic regression|Cox|ROC|other",
+      "auc_value": numeric float or null,
+      "odds_ratio": numeric float or null,
+      "hazard_ratio": numeric float or null,
+      "c_index": numeric float or null,
+      "effect_size": "full string including CI",
+      "p_value": numeric float or null,
+      "adjustments": "covariates adjusted for or 'unadjusted'",
+      "validation": "internal|external|none|cross-validation",
+      "source_location": "section name and table/figure",
+      "source_quote": "exact sentence — mandatory",
+      "confidence": "high|medium|low",
+      "notes": "caveats or null"
+    }
+  ]
+}
+
+Rules:
+- source_quote is MANDATORY.
+- One record per predictor evaluated.
+- Include both significant and non-significant predictors.
+- Return only valid JSON.
+"""
