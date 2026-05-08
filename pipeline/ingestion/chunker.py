@@ -1,5 +1,6 @@
 from typing import Optional
 
+from config.settings import CHUNK_SIZE, CHUNK_OVERLAP
 
 def chunk_document(doc_result: dict) -> list[dict]:
     """
@@ -64,8 +65,8 @@ def chunk_document(doc_result: dict) -> list[dict]:
 def _chunk_from_markdown(markdown: str) -> list[dict]:
     """Fallback: split raw markdown into ~6000 char windows."""
     chunks = []
-    step = 5500
-    overlap = 500
+    step =  CHUNK_SIZE #5500
+    overlap =  CHUNK_OVERLAP #500
     text = markdown
     i = 0
     while i < len(text):

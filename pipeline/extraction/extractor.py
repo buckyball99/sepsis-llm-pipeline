@@ -1,5 +1,6 @@
 from pipeline.extraction.llm_client import extract
 from pipeline.extraction.prompts import EXTRACTION_SYSTEM_PROMPT, PAPER_METADATA_PROMPT
+import time 
 
 
 def extract_paper_metadata(first_chunk_content: str, paper_id: str) -> dict:
@@ -68,6 +69,8 @@ def extract_from_chunks(chunks: list[dict], paper_metadata: dict) -> list[dict]:
         except Exception as e:
             print(f"  [extractor] Chunk {i+1} failed: {e}")
             continue
+
+        time.sleep(15)  # wait 15 seconds between chunks to stay under TPM limit
 
     print(f"  [extractor] Total raw records for paper: {len(all_records)}")
     return all_records
