@@ -11,7 +11,7 @@ import os
 import sys
 from dotenv import load_dotenv
 
-from config.settings import TEST_PDF, TEST_MODE
+from config.settings import TEST_PDF, TEST_MODE, METADATA_CHARS
 
 load_dotenv()
 
@@ -185,7 +185,72 @@ def test_validate():
     for r in valid:
         print(f"  PASS — {r['study_label']}: {r['predictor']} | warnings: {r.get('warnings')}")
     for r in failed:
-        print(f"  FAIL — {r.get('study_label')}: {r.get('_validation_errors', '')[:80]}")
+        print(f"  FAIL — {r.get('study_label')}:")
+        print(f"    {r.get('_validation_errors', '')}")
+
+def test_clear():
+    """Clear all data from the database."""
+    print("\n=== CLEAR: Database ===")
+    from pipeline.storage.db import clear_db, query_db
+    clear_db()
+    papers = query_db("SELECT COUNT(*) as count FROM papers")
+    evidence = query_db("SELECT COUNT(*) as count FROM evidence")
+    print(f"Papers rows remaining:   {papers['count'][0]}")
+    print(f"Evidence rows remaining: {evidence['count'][0]}")
+
+
+def test_full():
+    """Test 6: Full pipeline on a real PDF."""
+    print("\n=== TEST: Full Pipeline (single paper) ===")
+
+    if not os.path.exists(TEST_PDF):
+        print(f"✗ PDF not found: {TEST_PDF}")
+        print("  Update TEST_PDF at the top of main.py")
+        return
+
+    from pipeline.storage.db import init_db
+    # from pipeline.ingestion.docling_parser import parse_pdf
+    from pipeline.ingestion.marker_parser import parse_pdf
+    from pipeline.ingestion.chunker import chunk_document
+    from pipeline.extraction.extractor import extract_paper_metadata, extract_from_chunks
+    from pipeline.validation.validator import validate_records
+    from pipeline.storage.db import insert_paper, insert_evidence, query_db
+
+    init_db()
+
+    print("Step 1: Parsing PDF...")
+    parsed = parse_pdf(TEST_PDF)
+    chunks = chunk_document(parsed)
+    parsed["chunks"] = chunks
+    print(f"  → {len(chunks)} chunks")
+
+    print("Step 2: Extracting metadata...")
+    # metadata = extract_paper_metadata(chunks[0]["content"], parsed["paper_id"]) # Not able to find the metadata within the first chunk
+    metadata = extract_paper_metadata(parsed["markdown"][:METADATA_CHARS], parsed["paper_id"]) 
+    print(f"  → Study: {metadata.get('study_label')}")
+
+    print("Step 3: Extracting evidence...")
+    raw_records = extract_from_chunks(chunks, metadata)
+    print(f"  → {len(raw_records)} raw records")
+
+    print("Step 4: Validating...")
+    valid, failed = validate_records(raw_records)
+    print(f"  → {len(valid)} valid, {len(failed)} failed")
+
+    print("Step 5: Storing...")
+    insert_paper(metadata)
+    for r in valid:
+        insert_evidence(r)
+
+    print("Step 6: Querying back...")
+    papers_df = query_db("SELECT paper_id, title, authors, year, paper_type FROM papers")
+    evidence_df = query_db("SELECT study_label, predictor, outcome, auc_value, confidence FROM evidence")
+
+    print(f"\n--- papers table ({len(papers_df)} rows) ---")
+    print(papers_df.to_string())
+
+    print(f"\n--- evidence table ({len(evidence_df)} rows) ---")
+    print(evidence_df.to_string())
 
 
 def test_query():
@@ -220,56 +285,12 @@ def test_query():
         print("  (This is fine if the DB is empty — run test_db first)")
 
 
-def test_full():
-    """Test 6: Full pipeline on a real PDF."""
-    print("\n=== TEST: Full Pipeline (single paper) ===")
-
-    if not os.path.exists(TEST_PDF):
-        print(f"✗ PDF not found: {TEST_PDF}")
-        print("  Update TEST_PDF at the top of main.py")
-        return
-
-    from pipeline.storage.db import init_db
-    from pipeline.ingestion.docling_parser import parse_pdf
-    from pipeline.ingestion.chunker import chunk_document
-    from pipeline.extraction.extractor import extract_paper_metadata, extract_from_chunks
-    from pipeline.validation.validator import validate_records
-    from pipeline.storage.db import insert_paper, insert_evidence, query_db
-
-    init_db()
-
-    print("Step 1: Parsing PDF...")
-    parsed = parse_pdf(TEST_PDF)
-    chunks = chunk_document(parsed)
-    parsed["chunks"] = chunks
-    print(f"  → {len(chunks)} chunks")
-
-    print("Step 2: Extracting metadata...")
-    metadata = extract_paper_metadata(chunks[0]["content"], parsed["paper_id"])
-    print(f"  → Study: {metadata.get('study_label')}")
-
-    print("Step 3: Extracting evidence...")
-    raw_records = extract_from_chunks(chunks, metadata)
-    print(f"  → {len(raw_records)} raw records")
-
-    print("Step 4: Validating...")
-    valid, failed = validate_records(raw_records)
-    print(f"  → {len(valid)} valid, {len(failed)} failed")
-
-    print("Step 5: Storing...")
-    insert_paper(metadata)
-    for r in valid:
-        insert_evidence(r)
-
-    print("Step 6: Querying back...")
-    df = query_db("SELECT study_label, predictor, outcome, auc_value, confidence FROM evidence")
-    print(f"  → {len(df)} total records in DB")
-    print(df.to_string())
 
 
 # ─────────────────────────────────────────────
 TESTS = {
     "db":       test_db,
+    "clear":    test_clear,
     "parse":    test_parse,
     "extract":  test_extract,
     "validate": test_validate,

@@ -1,0 +1,1 @@
+SELECT predictor FROM sepsis_atlas.evidence;

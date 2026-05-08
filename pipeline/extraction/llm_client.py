@@ -5,6 +5,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# model_config.json fields:
+# model_provider: openrouter | groq | together | deepseek | openai
+# model_name: the exact model string for that provider
+# api_key_env: which .env variable holds the key
+# temperature: 0.0 = deterministic, higher = more creative
+# max_tokens: max length of LLM response
+# Older models : meta-llama/llama-3.1-70b-instruct
+
 with open("config/model_config.json") as f:
     CONFIG = json.load(f)
 
