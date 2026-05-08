@@ -13,7 +13,7 @@ from pipeline.validation.validator import validate_records
 from pipeline.storage.db import init_db, insert_paper, insert_evidence, paper_exists
 
 MAX_PARALLEL_PDFS = 3  # number of PDFs processed concurrently
-
+BATCH_SIZE = 3
 
 def _is_already_ingested(pdf_path: str) -> bool:
     """Check if a PDF has already been ingested by looking up its paper_id."""
@@ -77,44 +77,67 @@ def ingest_all(
     max_workers: int = MAX_PARALLEL_PDFS,
 ) -> dict:
     """
-    Ingest all PDFs in the given directory in parallel.
+    Ingest all PDFs in batches.
     Returns a dict mapping pdf_path -> record count.
     """
     init_db()
-
+ 
     pdfs = [
         os.path.join(pdf_dir, f)
         for f in sorted(os.listdir(pdf_dir))
         if f.lower().endswith(".pdf")
     ]
-
+ 
     if not pdfs:
         print(f"No PDFs found in {pdf_dir}")
         return {}
-
+ 
     already = sum(1 for p in pdfs if skip_existing and _is_already_ingested(p))
     to_process = len(pdfs) - already
-    print(f"Found {len(pdfs)} PDFs ({already} already ingested, {to_process} to process)")
-
+ 
+    print(
+        f"Found {len(pdfs)} PDFs "
+        f"({already} already ingested, {to_process} to process)"
+    )
+ 
     results: dict[str, int] = {}
-
+ 
     if to_process == 0:
         print("Nothing to ingest.")
         return {p: 0 for p in pdfs}
-
-    with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        future_to_pdf = {
-            pool.submit(ingest_paper, pdf, skip_existing): pdf
-            for pdf in pdfs
-        }
-        for future in as_completed(future_to_pdf):
-            pdf = future_to_pdf[future]
-            results[pdf] = future.result()
-
+ 
+    # Process in batches of 3
+    for i in range(0, len(pdfs), BATCH_SIZE):
+        batch = pdfs[i:i + BATCH_SIZE]
+ 
+        print(f"\nProcessing batch {i//BATCH_SIZE + 1}:")
+        for b in batch:
+            print(f" - {os.path.basename(b)}")
+ 
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            future_to_pdf = {
+                pool.submit(ingest_paper, pdf, skip_existing): pdf
+                for pdf in batch
+            }
+ 
+            for future in as_completed(future_to_pdf):
+                pdf = future_to_pdf[future]
+ 
+                try:
+                    results[pdf] = future.result()
+                    print(f"✓ Completed: {os.path.basename(pdf)}")
+                except Exception as e:
+                    print(f"✗ Failed: {os.path.basename(pdf)} -> {e}")
+                    results[pdf] = 0
+ 
     total = sum(results.values())
-    print(f"\n=== Ingestion complete: {total} total new records from {len(pdfs)} papers ===")
+ 
+    print(
+        f"\n=== Ingestion complete: "
+        f"{total} total new records from {len(pdfs)} papers ==="
+    )
+ 
     return results
-
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
