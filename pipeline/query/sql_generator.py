@@ -24,8 +24,9 @@ Notes:
 - Join tables on: evidence.paper_id = papers.paper_id
 - Use ILIKE '%term%' for case-insensitive text matching
 - not_reported = FALSE filters out records where data wasn't in the paper
-- Always SELECT study_label, source_quote so users can verify sources
+- Always SELECT paper_id, study_label, source_quote, population_desc,  predictor, outcome, method, performance, auc_value
 """
+#Always SELECT paper_id, study_label, source_quote so users can verify sources
 
 
 def query_to_dataframe(natural_language_query: str, max_retries: int = 3):

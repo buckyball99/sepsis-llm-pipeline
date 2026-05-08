@@ -5,7 +5,7 @@ from typing import Optional
 class EvidenceRecord(BaseModel):
     # Required identification
     paper_id:           str
-    study_label:        str
+    study_label:        Optional[str] = None
 
     # Population context
     population_desc:    Optional[str] = None

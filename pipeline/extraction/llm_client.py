@@ -13,7 +13,8 @@ _CONFIG_PATH = Path(__file__).parent.parent.parent / "config" / "model_config.js
 with open(_CONFIG_PATH) as f:
     CONFIG = json.load(f)
 
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+OPENROUTER_BASE_URL = "https://api.groq.com/openai/v1"
+#OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
 # Retry settings for 429 rate-limit errors
 _MAX_RETRIES = 5

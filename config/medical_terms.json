@@ -4,7 +4,7 @@
   "vanc": ["vancomycin"],
   "norad": ["noradrenaline", "norepinephrine", "NE", "vasopressor"],
   "blood pressure": ["MAP", "mean arterial pressure", "SBP", "systolic blood pressure"],
-  "28 day mortality": ["28-day all-cause mortality", "28d mortality", "28-day mortality rate"],
+  "28 day mortality": ["28 day all-cause mortality", "28 days mortality", "28-day mortality rate"],
   "septic shock": ["refractory septic shock", "vasopressor-dependent sepsis"],
   "organ failure": ["SOFA", "sequential organ failure assessment", "MOF", "multi-organ failure"],
   "lactate": ["lactic acid", "serum lactate", "blood lactate", "lactate clearance"],

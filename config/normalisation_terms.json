@@ -1,0 +1,35 @@
+{
+  "p-SOFA score": [
+    "p-SOFA", 
+    "pSOFA", 
+    "pediatric SOFA", 
+    "p-SOFA score"
+  ],
+  "PRISM III score": [
+    "PRISM-III", 
+    "PRISM 3",
+    "PRISM III"
+  ],
+  "PRISM III 24 score": [
+    "PRISM III 24", 
+    "PRISM III 24 score"
+  ],
+  "30-day mortality": [
+    "30 day mortality", 
+    "30-day all-cause mortality", 
+    "death at 30 days"
+  ],
+  "28-day mortality": [
+    "28 day mortality", 
+    "28d mortality", 
+    "28-day all-cause mortality"
+  ],
+  "unspecified mortality": [
+    "mortality"
+  ],
+  "SOFA score": [
+    "SOFA", 
+    "sofa", 
+    "sequential organ failure assessment score"
+  ]
+}
