@@ -1,9 +1,23 @@
 import hashlib
 import os
 from pathlib import Path
-from docling.document_converter import DocumentConverter
 
-converter = DocumentConverter()
+# Add these new imports for Docling options
+from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling.datamodel.pipeline_options import PdfPipelineOptions
+from docling.datamodel.base_models import InputFormat
+
+# Configure Docling to SKIP OCR
+pipeline_options = PdfPipelineOptions()
+pipeline_options.do_ocr = False  # <--- This disables RapidOCR
+pipeline_options.do_table_structure = True # Keep this true to try parsing text-based tables
+
+# Initialize the converter with our custom options
+converter = DocumentConverter(
+    format_options={
+        InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)
+    }
+)
 
 
 def parse_pdf(pdf_path: str) -> dict:

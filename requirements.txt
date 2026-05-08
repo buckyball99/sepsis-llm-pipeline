@@ -1,5 +1,6 @@
 # requirements.txt
 docling
+marker-pdf
 duckdb
 openai              # used as base client for all providers including OpenRouter
 pydantic>=2.0

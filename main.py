@@ -89,8 +89,8 @@ def test_parse():
         print("  Put a PDF in data/raw_pdfs/ and update TEST_PDF at the top of main.py")
         return
 
-    # from pipeline.ingestion.docling_parser import parse_pdf
-    from pipeline.ingestion.marker_parser import parse_pdf
+    from pipeline.ingestion.docling_parser import parse_pdf
+    #from pipeline.ingestion.marker_parser import parse_pdf
     from pipeline.ingestion.chunker import chunk_document
 
     print(f"Parsing: {TEST_PDF}")

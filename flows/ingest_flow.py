@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from prefect import flow, task
 from prefect.tasks import task_input_hash
 
-# from pipeline.ingestion.docling_parser import parse_pdf
-from pipeline.ingestion.marker_parser import parse_pdf
+from pipeline.ingestion.docling_parser import parse_pdf
+#from pipeline.ingestion.marker_parser import parse_pdf
 from pipeline.ingestion.chunker import chunk_document
 from pipeline.extraction.extractor import extract_paper_metadata, extract_from_chunks
 from pipeline.validation.validator import validate_records
