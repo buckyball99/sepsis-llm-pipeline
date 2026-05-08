@@ -20,10 +20,13 @@
     "death at 30 days"
   ],
   "28-day mortality": [
-    "28 day mortality", 
+    "28 day mortality",
     "28d mortality", 
-    "28-day all-cause mortality"
-  ],
+    "28-day all-cause mortality",
+    "28-day mortality rate",
+    "28 days mortality",
+    "28 day all-cause mortality"
+  ],    
   "unspecified mortality": [
     "mortality"
   ],

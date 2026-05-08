@@ -54,12 +54,15 @@ def insert_evidence(record: dict):
             AND predictor = ? 
             AND outcome = ?
             AND (auc_value = ? OR (auc_value IS NULL AND ? IS NULL))
+            AND (method = ? OR (method IS NULL AND ? IS NULL))    
         """, [
             record.get("paper_id"),
             record.get("predictor"),
             record.get("outcome"),
             record.get("auc_value"),
             record.get("auc_value"),
+            record.get("method"),
+            record.get("method"),
         ]).fetchone()
         
         if existing:

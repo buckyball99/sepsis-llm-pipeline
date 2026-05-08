@@ -16,7 +16,7 @@ NORMALISATION_TERMS = PROJECT_ROOT / "config" / "normalisation_terms.json"
 # ── Test settings ─────────────────────────────────────────
 TEST_MODE       = "full"        # change this to switch test: db|parse|extract|validate|query|full
 TEST_PDF        = RAW_PDFS_DIR / "Baloch_2022.pdf"   # update filename when you add a PDF
-
+TEST_ALL        = False         # set to True to run all pdfs in raw_pdfs/
 
 # ── Chunking settings ─────────────────────────────────────────
 CHUNK_SIZE    = 5500

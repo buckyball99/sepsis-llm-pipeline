@@ -4,12 +4,13 @@ import time
 
 
 def extract_paper_metadata(first_chunk_content: str, paper_id: str) -> dict:
-    """
-    Extract title, authors, year etc. from the first chunk of a paper.
-    Returns a metadata dict ready for insert_paper().
-    """
     try:
         result = extract(PAPER_METADATA_PROMPT, first_chunk_content[:3000])
+        
+        # Handle case where LLM returns a list instead of a dict
+        if isinstance(result, list):
+            result = result[0] if result else {}
+            
         result["paper_id"] = paper_id
         return result
     except Exception as e:
@@ -28,7 +29,6 @@ def extract_paper_metadata(first_chunk_content: str, paper_id: str) -> dict:
             "setting": "unknown",
             "country": None,
         }
-
 
 def extract_from_chunks(chunks: list[dict], paper_metadata: dict) -> list[dict]:
     """

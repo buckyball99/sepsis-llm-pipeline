@@ -12,6 +12,7 @@ import sys
 from dotenv import load_dotenv
 
 from config.settings import TEST_PDF, TEST_MODE, METADATA_CHARS
+import config.settings as s
 
 load_dotenv()
 
@@ -200,58 +201,86 @@ def test_clear():
 
 
 def test_full():
-    """Test 6: Full pipeline on a real PDF."""
-    print("\n=== TEST: Full Pipeline (single paper) ===")
-
-    if not os.path.exists(TEST_PDF):
-        print(f"✗ PDF not found: {TEST_PDF}")
-        print("  Update TEST_PDF at the top of main.py")
-        return
-
-    from pipeline.storage.db import init_db
-    # from pipeline.ingestion.docling_parser import parse_pdf
+    """Test 6: Full pipeline - single paper or all papers in raw_pdfs/"""
+    import os
+    from config.settings import TEST_ALL, RAW_PDFS_DIR
+    from pipeline.storage.db import init_db, insert_paper, insert_evidence, query_db
     from pipeline.ingestion.marker_parser import parse_pdf
     from pipeline.ingestion.chunker import chunk_document
     from pipeline.extraction.extractor import extract_paper_metadata, extract_from_chunks
     from pipeline.validation.validator import validate_records
-    from pipeline.storage.db import insert_paper, insert_evidence, query_db
 
     init_db()
 
-    print("Step 1: Parsing PDF...")
-    parsed = parse_pdf(TEST_PDF)
-    chunks = chunk_document(parsed)
-    parsed["chunks"] = chunks
-    print(f"  → {len(chunks)} chunks")
+    # Build list of PDFs to process
+    if TEST_ALL:
+        pdfs = [
+            str(RAW_PDFS_DIR / f) 
+            for f in os.listdir(RAW_PDFS_DIR) 
+            if f.endswith(".pdf")
+        ]
+        print(f"Found {len(pdfs)} PDFs to ingest")
+    else:
+        if not os.path.exists(TEST_PDF):
+            print(f"✗ PDF not found: {TEST_PDF}")
+            return
+        pdfs = [str(TEST_PDF)]
+        
+    total_valid = 0
+    total_failed = 0
 
-    print("Step 2: Extracting metadata...")
-    # metadata = extract_paper_metadata(chunks[0]["content"], parsed["paper_id"]) # Not able to find the metadata within the first chunk
-    metadata = extract_paper_metadata(parsed["markdown"][:METADATA_CHARS], parsed["paper_id"]) 
-    print(f"  → Study: {metadata.get('study_label')}")
+    for pdf_path in pdfs:
+        print(f"\n{'='*50}")
+        print(f"Processing: {os.path.basename(pdf_path)}")
+        print(f"{'='*50}")
 
-    print("Step 3: Extracting evidence...")
-    raw_records = extract_from_chunks(chunks, metadata)
-    print(f"  → {len(raw_records)} raw records")
+        print("Step 1: Parsing PDF...")
+        parsed = parse_pdf(pdf_path)
+        chunks = chunk_document(parsed)
+        parsed["chunks"] = chunks
+        print(f"  → {len(chunks)} chunks")
 
-    print("Step 4: Validating...")
-    valid, failed = validate_records(raw_records)
-    print(f"  → {len(valid)} valid, {len(failed)} failed")
+        print("Step 2: Extracting metadata...")
+        metadata = extract_paper_metadata(
+            parsed["markdown"][:METADATA_CHARS], 
+            parsed["paper_id"]
+        )
+        metadata["filename"] = pdf_path
+        print(f"  → Study: {metadata.get('study_label')}")
 
-    print("Step 5: Storing...")
-    insert_paper(metadata)
-    for r in valid:
-        insert_evidence(r)
+        print("Step 3: Extracting evidence...")
+        raw_records = extract_from_chunks(chunks, metadata)
+        print(f"  → {len(raw_records)} raw records")
 
-    print("Step 6: Querying back...")
+        print("Step 4: Validating...")
+        valid, failed = validate_records(raw_records)
+        print(f"  → {len(valid)} valid, {len(failed)} failed")
+
+        print("Step 5: Storing...")
+        insert_paper(metadata)
+        for r in valid:
+            insert_evidence(r)
+
+        total_valid += len(valid)
+        total_failed += len(failed)
+
+    print(f"\n{'='*50}")
+    print(f"INGESTION COMPLETE")
+    print(f"  PDFs processed: {len(pdfs)}")
+    print(f"  Total valid records: {total_valid}")
+    print(f"  Total failed records: {total_failed}")
+    print(f"{'='*50}")
+
+    print("\nStep 6: Querying back...")
     papers_df = query_db("SELECT paper_id, title, authors, year, paper_type FROM papers")
-    evidence_df = query_db("SELECT study_label, predictor, outcome, auc_value, confidence FROM evidence")
-
+    evidence_df = query_db("""
+        SELECT study_label, predictor, outcome, auc_value, confidence, method 
+        FROM evidence
+    """)
     print(f"\n--- papers table ({len(papers_df)} rows) ---")
     print(papers_df.to_string())
-
     print(f"\n--- evidence table ({len(evidence_df)} rows) ---")
     print(evidence_df.to_string())
-
 
 def test_query():
     """Test 5: Can the query layer expand, route, and generate SQL?"""
@@ -284,7 +313,10 @@ def test_query():
         print(f"  Note: {e}")
         print("  (This is fine if the DB is empty — run test_db first)")
 
-
+def test_full_all():
+    """Run full pipeline on all PDFs in raw_pdfs/"""
+    s.TEST_ALL = True
+    test_full()
 
 
 # ─────────────────────────────────────────────
@@ -296,6 +328,7 @@ TESTS = {
     "validate": test_validate,
     "query":    test_query,
     "full":     test_full,
+    "full_all": test_full_all
 }
 
 if __name__ == "__main__":

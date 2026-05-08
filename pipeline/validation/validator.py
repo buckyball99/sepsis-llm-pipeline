@@ -27,6 +27,7 @@ def normalise_term(term: str) -> str:
     return REVERSE_MAP.get(clean_term, term.strip())
 
 def normalise_record(record: dict) -> dict:
+    
     record["predictor"] = normalise_term(record.get("predictor", ""))
     record["outcome"] = normalise_term(record.get("outcome", ""))
     return record
