@@ -1,0 +1,6 @@
+services:
+  rag-gui:
+    build: .
+    image: rag-ui:latest
+    ports: ["8051:8051"]
+    command: ["streamlit","run","ui/app.py","--server.port","8051"]
